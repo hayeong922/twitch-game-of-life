@@ -1,19 +1,19 @@
-import socket
+import time
 
 import numpy as np
 from PIL import Image, ImageDraw
 
-from settings import PASS, USER
-
 size = 10
+tickrate = 1
 
 class Conway:
     def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols
         self.grid = np.zeros((rows, cols))
+        self.flip_queue = []
+        self.generation = 0
 
-    #use two matrices, 
     def tick(self):
         new = np.copy(self.grid)
         for r in range(self.rows):
@@ -34,6 +34,7 @@ class Conway:
                     if adj_count == 3:
                         new[r,c] = 1
         self.grid = new
+        self.generation += 1
 
     def draw(self):
         im = Image.new("RGB", (self.rows*size, self.cols*size), color="white")
@@ -46,22 +47,23 @@ class Conway:
                                    outline="gray")
         im.save("grid.png")
         
-    def flip(self, r, c):
-        self.grid[r,c] = not self.grid[r,c]
+    def flip(self):
+        for r, c in self.flip_queue:
+            self.grid[r,c] = not self.grid[r,c]
+
+    def loop(self):
+        while True:
+            self.flip()
+            self.tick()
+            self.draw()
+            time.sleep(tickrate)
+            print("Generation {}".format(self.generation))
 
 def create_block(m, r, c):
     m[r,c] = 1
     m[r,c+1] = 1
     m[r+1,c] = 1
     m[r+1,c+1] = 1
-
-def open_socket():
-    s = socket.socket()
-    s.connect(("irc.twitch.tv", 6667))
-    s.send(b"PASS " + PASS + b"\r\n")
-    s.send(b"NICK " + USER + b"\r\n")
-    s.send(b"JOIN #" + USER + b"\r\n")
-    return s
 
 g = Conway(10, 10)
 create_block(g.grid,0,0)
