@@ -3,7 +3,6 @@ from threading import Thread
 
 import pygame
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 
 from chat import Chat
 
