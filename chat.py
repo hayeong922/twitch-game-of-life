@@ -9,7 +9,7 @@ class Chat:
         s.send(b"PASS " + PASS + b"\r\n")
         s.send(b"NICK " + USER + b"\r\n")
         s.send(b"JOIN #" + USER + b"\r\n")
-        s.recv(2048)
+        s.recv(1024)
         self.socket = s
 
     def get_messages(self):
