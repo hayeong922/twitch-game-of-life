@@ -20,3 +20,7 @@ Finally, run
     $ python run.py
     
 to start the game window. You can use OBS to then stream the window to Twitch.
+
+#Demo
+
+https://www.youtube.com/watch?v=NVVtIIcbTBg
