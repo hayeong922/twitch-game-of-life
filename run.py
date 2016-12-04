@@ -1,4 +1,4 @@
-from threading import Thread
+'''from threading import Thread
 
 from conway import Conway, create_block
 from chat import Chat
@@ -19,4 +19,9 @@ if __name__ == "__main__":
     game_thread = Thread(target=game.loop)
     chat_thread = Thread(target=update_flips, args=(game,chat))
     game_thread.start()
-    chat_thread.start()
+    chat_thread.start()'''
+
+from conway import Conway, create_block
+game = Conway(100,100)
+create_block(game.grid, 50, 50)
+game.loop()

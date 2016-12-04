@@ -1,10 +1,23 @@
 import time
+from threading import Thread
 
+import pygame
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
+from chat import Chat
+
 size = 10
-tickrate = .5
+tickrate = 1
+
+def update_flips(game, chat):
+    while True:
+        for message in chat.get_messages():
+            if message.startswith("flip"):
+                split = message[4:].strip().split(",")
+                if len(split) == 2 and all([n.isnumeric() for n in split]):
+                    print("Flipped {}".format(split)) 
+                    game.flip_queue.append(split)
 
 class Conway:
     def __init__(self, rows, cols):
@@ -13,6 +26,12 @@ class Conway:
         self.grid = np.zeros((rows, cols))
         self.flip_queue = []
         self.generation = 0
+        pygame.init()
+        self.screen = pygame.display.set_mode((1000,1000))
+        self.font = pygame.font.SysFont("monospace", int(self.rows*size*.04))
+        chat = Chat()
+        self.chat_thread = Thread(target=update_flips, args=(self,chat))
+        self.chat_thread.start()
 
     def count_neighbors(self, r, c):
         adj_count = 0
@@ -41,27 +60,35 @@ class Conway:
         self.generation += 1
 
     def draw(self):
+        self.screen.fill((255,255,255))
         im = Image.new("RGB", (self.rows*size, self.cols*size), color="white")
         draw = ImageDraw.Draw(im)
         for r in range(self.rows):
             for c in range(self.cols):
                 if self.grid[r,c]:
-                    draw.rectangle([c*size, r*size, (c+1)*size, (r+1)*size], fill="black", outline="gray")
+                    pygame.draw.rect(self.screen, (0,0,0), [c*size, r*size, size, size], 0)
+                    pygame.draw.rect(self.screen, (127,127,127), [c*size, r*size, size, size], 1)
         #windows
-        draw.text((0, self.rows*size*.9), repr(self.generation), fill="black", font=ImageFont.truetype("arial", size=int(self.rows*size*.1)))
-        im.save("grid.png")
+        #text = draw.text("{}".format(self.generation), 1, (0,0,0))
+        #self.screen.blit(text, (size, int(self.rows*size*.96)))
+        #draw.text(, repr(self.generation), fill="black", font=ImageFont.truetype("arial", size=int(self.rows*size*.04)))
+        #im.save("grid.png")
+        pygame.display.update()
         
     def flip(self):
-        draw = False
         for r, c in self.flip_queue:
             self.grid[r,c] = not self.grid[r,c]
             draw = True
         self.flip_queue = []
-        return draw
 
     def loop(self):
-        while True:
-            self.flip
+        exit = False
+        while not exit:
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
+                    exit = True
+            self.flip()
             self.draw()
             time.sleep(tickrate/2)
             self.tick()
